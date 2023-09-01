@@ -22,7 +22,6 @@ def _generate_examples(paths) -> Iterator[Tuple[str, Any]]:
         print(f'\n\nProccessing {episode_path}')
         # load raw data --> this should change for your dataset
         with h5py.File(episode_path, 'r') as root:
-            is_sim = root.attrs['sim']
             original_action_shape = root['/action'].shape
             episode_len = original_action_shape[0]
 
@@ -101,8 +100,8 @@ class Aloha(MultiThreadedDatasetBuilder):
     RELEASE_NOTES = {
       '1.0.0': 'Initial release.',
     }
-    N_WORKERS = 24             # number of parallel workers for data conversion
-    MAX_PATHS_IN_MEMORY = 15  # number of paths converted & stored in memory before writing to disk
+    N_WORKERS = 10             # number of parallel workers for data conversion
+    MAX_PATHS_IN_MEMORY = 10  # number of paths converted & stored in memory before writing to disk
                                # -> the higher the faster / more parallel conversion, adjust based on avilable RAM
                                # note that one path may yield multiple episodes and adjust accordingly
     PARSE_FCN = _generate_examples      # handle to parse function from file paths to RLDS episodes
@@ -190,6 +189,18 @@ class Aloha(MultiThreadedDatasetBuilder):
         """Define filepaths for data splits."""
         paths = glob.glob('/scr/tonyzhao/rlds/*/episode*.hdf5')
         print(len(paths))
+
+        # # check if all path can be opened
+        # for episode_path in paths:
+        #     try:
+        #         with h5py.File(episode_path, 'r') as root:
+        #             _ = root['/observations/qpos']
+        #             for cam_name in ['cam_high', 'cam_low', 'cam_left_wrist', 'cam_right_wrist']:
+        #                 _ = root[f'/observations/images/{cam_name}']
+        #             _ = root['/action']
+        #     except:
+        #         print(episode_path)
+        # exit()
 
         return {
             'train': paths,
